@@ -34,7 +34,9 @@ const ICONS: [(u32, &[u8]); 9] = [
     (256, include_bytes!("../../freekstyle/assets/icon/256.png")),
     (512, include_bytes!("../../freekstyle/assets/icon/512.png")),
 ];
-/// The launcher's icon (the Freekstyle wordmark), same sizes.
+const LAUNCHER_ICON_256: &[u8] = include_bytes!("../../freekstyle/assets/launcher/256.png");
+/// The launcher's icon (the Freekstyle wordmark), same sizes for Linux hicolor themes.
+#[cfg(target_os = "linux")]
 const LAUNCHER_ICONS: [(u32, &[u8]); 9] = [
     (16, include_bytes!("../../freekstyle/assets/launcher/16.png")),
     (22, include_bytes!("../../freekstyle/assets/launcher/22.png")),
@@ -43,7 +45,7 @@ const LAUNCHER_ICONS: [(u32, &[u8]); 9] = [
     (48, include_bytes!("../../freekstyle/assets/launcher/48.png")),
     (64, include_bytes!("../../freekstyle/assets/launcher/64.png")),
     (128, include_bytes!("../../freekstyle/assets/launcher/128.png")),
-    (256, include_bytes!("../../freekstyle/assets/launcher/256.png")),
+    (256, LAUNCHER_ICON_256),
     (512, include_bytes!("../../freekstyle/assets/launcher/512.png")),
 ];
 const WORDMARK_PNG: &[u8] = include_bytes!("../../freekstyle/assets/launcher/wordmark.png");
@@ -95,7 +97,7 @@ fn main() -> eframe::Result {
             .with_app_id("freekstyle-launcher")
             .with_inner_size([760.0, 640.0])
             .with_min_inner_size([560.0, 420.0])
-            .with_icon(eframe::icon_data::from_png_bytes(LAUNCHER_ICONS[7].1).unwrap_or_default()),
+            .with_icon(eframe::icon_data::from_png_bytes(LAUNCHER_ICON_256).unwrap_or_default()),
         ..Default::default()
     };
     eframe::run_native("Freekstyle Launcher", options, Box::new(|cc| Ok(Box::new(Launcher::new(cc)))))
@@ -303,6 +305,10 @@ impl Launcher {
         match Command::new(&bin).spawn() {
             Ok(child) => {
                 self.game = Some(child);
+                // Release SDL3/HIDAPI controller handles while the game runs so
+                // exclusive controller/rumble access on Windows is never contended.
+                self.controllers = None;
+                self.capture = None;
                 self.status = self.tr().game_running.into();
             }
             Err(e) => self.status = format!("{}: {e} ({})", bin.display(), self.tr().build_hint),
@@ -538,6 +544,7 @@ impl eframe::App for Launcher {
             if let Ok(Some(status)) = child.try_wait() {
                 self.status = if status.success() { t.game_closed.into() } else { fill(t.game_exited, &[&status.to_string()]) };
                 self.game = None;
+                self.controllers = ControllerManager::new().map_err(|e| eprintln!("[input] gamepads unavailable: {e}")).ok();
             }
         }
         let (pad_name, pad_pressed) = self.poll_gamepad();

@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.rs text eol=lf
+*.toml text eol=lf
+*.frag text eol=lf
+*.vert text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.png binary
+*.bin binary
+*.iso binary

@@ -84,7 +84,7 @@ MESSAGES = {
     "check_tools": ("Tools and libraries", "Ferramentas e bibliotecas", "Herramientas y bibliotecas", "Outils et bibliothèques"),
     "req_compiler": ("C compiler and linker", "compilador C e linker", "compilador C y enlazador", "compilateur C et éditeur de liens"),
     "req_pkgconfig": ("pkg-config", "pkg-config", "pkg-config", "pkg-config"),
-    "req_glslc": ("glslc (shader compiler)", "glslc (compilador de shaders)", "glslc (compilador de shaders)", "glslc (compilateur de shaders)"),
+    "req_cmake": ("cmake (to build SDL3)", "cmake (para compilar a SDL3)", "cmake (para compilar SDL3)", "cmake (pour compiler SDL3)"),
     "req_alsa": ("ALSA headers (sound)", "cabeçalhos ALSA (som)", "cabeceras ALSA (sonido)", "en-têtes ALSA (son)"),
     "req_udev": ("libudev headers (controllers)", "cabeçalhos libudev (controles)", "cabeceras libudev (mandos)", "en-têtes libudev (manettes)"),
     "req_vulkan": ("Vulkan loader and driver (graphics)", "Vulkan: carregador e driver (gráficos)", "Vulkan: cargador y controlador (gráficos)", "Vulkan : chargeur et pilote (graphismes)"),
@@ -380,17 +380,17 @@ def install_command(family):
 def packages(family):
     """Packages for each requirement, per distribution."""
     if family == "arch":
-        return {"compiler": ["base-devel"], "pkgconfig": ["pkgconf"], "glslc": ["shaderc"], "alsa": ["alsa-lib"],
+        return {"compiler": ["base-devel"], "pkgconfig": ["pkgconf"], "cmake": ["cmake"], "alsa": ["alsa-lib"],
                 "udev": ["systemd-libs"], "ffmpeg": ["ffmpeg"], "curl": ["curl"],
                 "vulkan": ["vulkan-icd-loader"] + vulkan_drivers("vulkan-radeon", "vulkan-intel", "vulkan-nouveau", "nvidia-utils", "vulkan-swrast")}
     if family == "debian":
-        return {"compiler": ["build-essential"], "pkgconfig": ["pkg-config"], "glslc": ["glslc"], "alsa": ["libasound2-dev"],
+        return {"compiler": ["build-essential"], "pkgconfig": ["pkg-config"], "cmake": ["cmake"], "alsa": ["libasound2-dev"],
                 "udev": ["libudev-dev"], "ffmpeg": ["ffmpeg"], "curl": ["curl"], "vulkan": ["libvulkan1", "mesa-vulkan-drivers"]}
     if family == "fedora":
-        return {"compiler": ["gcc"], "pkgconfig": ["pkgconf-pkg-config"], "glslc": ["glslc"], "alsa": ["alsa-lib-devel"],
+        return {"compiler": ["gcc"], "pkgconfig": ["pkgconf-pkg-config"], "cmake": ["cmake"], "alsa": ["alsa-lib-devel"],
                 "udev": ["systemd-devel"], "ffmpeg": ["ffmpeg-free"], "curl": ["curl"], "vulkan": ["vulkan-loader", "mesa-vulkan-drivers"]}
     if family == "suse":
-        return {"compiler": ["gcc"], "pkgconfig": ["pkgconf-pkg-config"], "glslc": ["shaderc"], "alsa": ["alsa-devel"],
+        return {"compiler": ["gcc"], "pkgconfig": ["pkgconf-pkg-config"], "cmake": ["cmake"], "alsa": ["alsa-devel"],
                 "udev": ["systemd-devel"], "ffmpeg": ["ffmpeg"], "curl": ["curl"],
                 "vulkan": ["libvulkan1"] + vulkan_drivers("libvulkan_radeon", "libvulkan_intel", "libvulkan_lvp", "libvulkan_lvp", "libvulkan_lvp")}
     return {}
@@ -472,7 +472,7 @@ class Installer:
         reqs = [
             ("compiler", t("req_compiler"), have("cc"), True),
             ("pkgconfig", t("req_pkgconfig"), have("pkg-config"), True),
-            ("glslc", t("req_glslc"), have("glslc"), True),
+            ("cmake", t("req_cmake"), have("cmake"), True),
             ("alsa", t("req_alsa"), pkg_config("alsa"), True),
             ("udev", t("req_udev"), pkg_config("libudev"), True),
             ("vulkan", t("req_vulkan"), vulkan_ok(), True),
